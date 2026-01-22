@@ -1,186 +1,505 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FreelancerHub</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-
-<style>
-body { font-family: Inter, sans-serif; background: #f9fafb }
-.sidebar-item.active { background:#4f46e5;color:white }
-.chat-bubble { max-width:70%; padding:10px;border-radius:12px;margin:6px }
-.client { background:#f1f5f9 }
-.freelancer { background:#4f46e5;color:white;margin-left:auto }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FreelancerHub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root{
+      --brand:#4f46e5;
+      --muted:#6b7280;
+      --bg:#f8fafc;
+    }
+    html,body{height:100%}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#0f172a}
+    .sidebar-item.active{background:var(--brand); color:white}
+    .chat-bubble{max-width:70%; padding:10px;border-radius:12px;margin:6px;line-height:1.3}
+    .client{background:#eef2ff}
+    .freelancer{background:var(--brand); color:white;margin-left:auto}
+    .fade{transition:all .18s ease}
+    .card{background:white;border-radius:.5rem;box-shadow:0 1px 2px rgba(15,23,42,.04);padding:1rem}
+    /* small responsive tweaks */
+    @media (max-width:900px){
+      aside{width:64px}
+      aside h1{display:none}
+      main{padding:1rem}
+    }
+  </style>
 </head>
+<body class="min-h-screen flex">
 
-<body class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r p-4 shrink-0">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-lg font-bold">FH</div>
+      <div>
+        <h1 class="text-lg font-semibold text-indigo-600">FreelancerHub</h1>
+        <p class="text-sm text-gray-500">Workspace</p>
+      </div>
+    </div>
 
-<!-- Sidebar -->
-<aside class="w-64 bg-white border-r p-4">
-  <h1 class="text-xl font-bold mb-6 text-indigo-600">FreelancerHub</h1>
-  <nav class="space-y-2">
-    <button onclick="showPage('dashboard')" class="sidebar-item active w-full text-left p-2 rounded">Dashboard</button>
-    <button onclick="showPage('invoices')" class="sidebar-item w-full text-left p-2 rounded">Invoices</button>
-    <button onclick="showPage('chat')" class="sidebar-item w-full text-left p-2 rounded">Chat</button>
-    <button onclick="showPage('proposals')" class="sidebar-item w-full text-left p-2 rounded">Proposals</button>
-    <button onclick="showPage('settings')" class="sidebar-item w-full text-left p-2 rounded">Settings</button>
-  </nav>
-</aside>
+    <nav class="space-y-2" aria-label="Main navigation">
+      <button onclick="showPage('dashboard')" class="sidebar-item active w-full text-left p-2 rounded flex items-center gap-3 fade" aria-current="page"><i class="fa-solid fa-chart-line w-4"></i> Dashboard</button>
+      <button onclick="showPage('invoices')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-regular fa-file-invoice-dollar w-4"></i> Invoices</button>
+      <button onclick="showPage('chat')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-regular fa-comments w-4"></i> Chat</button>
+      <button onclick="showPage('proposals')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-solid fa-robot w-4"></i> Proposals</button>
+      <button onclick="showPage('settings')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-solid fa-gear w-4"></i> Settings</button>
+    </nav>
 
-<!-- Main -->
-<main class="flex-1 p-6">
+    <div class="mt-6 text-sm text-gray-500">
+      <div class="flex items-center justify-between">
+        <span>Plan</span>
+        <span class="font-semibold text-indigo-600">Free</span>
+      </div>
+      <div class="mt-3">
+        <button onclick="resetDemo()" class="w-full text-xs border rounded px-2 py-1">Reset demo data</button>
+      </div>
+    </div>
+  </aside>
 
-<!-- Dashboard -->
-<section id="dashboard">
-  <h2 class="text-2xl font-bold mb-4">Dashboard</h2>
-  <p>Welcome back! Your workspace is ready.</p>
-</section>
+  <!-- Main -->
+  <main class="flex-1 p-6">
+    <!-- Topbar -->
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h2 id="pageTitle" class="text-2xl font-bold">Dashboard</h2>
+        <p class="text-sm text-gray-500">Overview of your activity</p>
+      </div>
 
-<!-- Invoices -->
-<section id="invoices" class="hidden">
-  <div class="flex justify-between mb-4">
-    <h2 class="text-2xl font-bold">Invoices</h2>
-    <button onclick="openModal()" class="bg-indigo-600 text-white px-4 py-2 rounded">New Invoice</button>
-  </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-2 bg-white card">
+          <i class="fa-regular fa-bell text-gray-400"></i>
+          <span class="text-sm text-gray-600">No notifications</span>
+        </div>
 
-  <table class="w-full bg-white rounded shadow">
-    <thead class="bg-gray-100">
-      <tr><th class="p-2">Client</th><th>Amount</th><th>Status</th></tr>
-    </thead>
-    <tbody id="invoiceTable"></tbody>
-  </table>
-</section>
+        <div class="flex items-center gap-3">
+          <div class="text-right mr-2">
+            <div class="text-xs text-gray-500">Signed in as</div>
+            <div class="text-sm font-medium">You</div>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center">Y</div>
+        </div>
+      </div>
+    </header>
 
-<!-- Chat -->
-<section id="chat" class="hidden">
-  <h2 class="text-2xl font-bold mb-4">Client Chat</h2>
-  <div id="chatBox" class="bg-white p-4 h-64 overflow-y-auto rounded border"></div>
+    <!-- Dashboard -->
+    <section id="dashboard" class="">
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Outstanding</div>
+              <div id="outstanding" class="text-2xl font-semibold">$0.00</div>
+            </div>
+            <i class="fa-solid fa-wallet text-2xl text-indigo-600"></i>
+          </div>
+        </div>
 
-  <div class="flex mt-2 gap-2">
-    <input id="chatInput" class="flex-1 border p-2 rounded" placeholder="Type message..." />
-    <button onclick="sendMessage()" class="bg-indigo-600 text-white px-4 rounded">Send</button>
-  </div>
-</section>
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Invoices</div>
+              <div id="invoiceCount" class="text-2xl font-semibold">0</div>
+            </div>
+            <i class="fa-regular fa-file-invoice text-2xl text-indigo-600"></i>
+          </div>
+        </div>
 
-<!-- Proposals -->
-<section id="proposals" class="hidden">
-  <h2 class="text-2xl font-bold mb-4">AI Proposal Generator</h2>
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Messages</div>
+              <div id="messageCount" class="text-2xl font-semibold">0</div>
+            </div>
+            <i class="fa-regular fa-comments text-2xl text-indigo-600"></i>
+          </div>
+        </div>
+      </div>
 
-  <textarea id="proposalInput" class="w-full border p-3 rounded" placeholder="Describe project..."></textarea>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold">Recent Invoices</h3>
+            <button onclick="showPage('invoices')" class="text-sm text-indigo-600">View all</button>
+          </div>
+          <div id="recentInvoices" class="space-y-2 text-sm text-gray-700"></div>
+        </div>
 
-  <button onclick="generateProposal()" class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded">Generate</button>
+        <div class="card">
+          <h3 class="font-semibold mb-3">Quick Actions</h3>
+          <div class="flex gap-2">
+            <button onclick="showPage('proposals')" class="bg-indigo-600 text-white px-3 py-2 rounded flex items-center gap-2"><i class="fa-solid fa-robot"></i> Generate Proposal</button>
+            <button onclick="openModal()" class="border px-3 py-2 rounded flex items-center gap-2"><i class="fa-regular fa-file-invoice-dollar"></i> New Invoice</button>
+            <button onclick="showPage('chat')" class="border px-3 py-2 rounded flex items-center gap-2"><i class="fa-regular fa-comments"></i> Open Chat</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <pre id="proposalOutput" class="bg-gray-100 p-4 mt-4 rounded"></pre>
-</section>
+    <!-- Invoices -->
+    <section id="invoices" class="hidden">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-2xl font-bold">Invoices</h2>
+          <p class="text-sm text-gray-500">Manage and track invoices</p>
+        </div>
 
-<!-- Settings -->
-<section id="settings" class="hidden">
-  <h2 class="text-2xl font-bold mb-4">Settings</h2>
-  <p>Profile, preferences, integrations coming here.</p>
-</section>
+        <div class="flex gap-2 items-center">
+          <input id="invoiceSearch" oninput="renderInvoices()" class="border rounded px-3 py-2 text-sm" placeholder="Search client or amount" />
+          <select id="statusFilter" onchange="renderInvoices()" class="border rounded px-3 py-2 text-sm">
+            <option value="all">All statuses</option>
+            <option value="Sent">Sent</option>
+            <option value="Paid">Paid</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <button onclick="openModal()" class="bg-indigo-600 text-white px-4 py-2 rounded">New Invoice</button>
+        </div>
+      </div>
 
-</main>
+      <div class="card overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-gray-500">
+            <tr>
+              <th class="p-2">Client</th>
+              <th class="p-2">Amount</th>
+              <th class="p-2">Status</th>
+              <th class="p-2">Date</th>
+              <th class="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTable" class="align-top"></tbody>
+        </table>
 
-<!-- Invoice Modal -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center">
-  <div class="bg-white p-6 rounded w-96">
-    <h3 class="font-bold text-lg mb-4">Create Invoice</h3>
+        <div class="flex items-center justify-between mt-4">
+          <div class="text-sm text-gray-600">Total outstanding <span id="totalOutstanding" class="font-semibold ml-2">$0.00</span></div>
+          <div class="text-sm text-gray-500">Showing <span id="shownCount">0</span> invoices</div>
+        </div>
+      </div>
+    </section>
 
-    <input id="clientName" class="border p-2 w-full mb-2" placeholder="Client name" />
-    <input id="amount" type="number" class="border p-2 w-full mb-2" placeholder="Amount" />
+    <!-- Chat -->
+    <section id="chat" class="hidden">
+      <h2 class="text-2xl font-bold mb-2">Client Chat</h2>
+      <p class="text-sm text-gray-500 mb-4">Real-time style chat for quick client messages</p>
 
-    <div class="flex justify-end gap-2">
-      <button onclick="closeModal()" class="px-3 py-1 border rounded">Cancel</button>
-      <button onclick="saveInvoice()" class="bg-indigo-600 text-white px-3 py-1 rounded">Save</button>
+      <div class="card flex flex-col h-80">
+        <div id="chatBox" class="flex-1 overflow-y-auto p-3" aria-live="polite"></div>
+
+        <div class="mt-3 flex gap-2">
+          <input id="chatInput" class="flex-1 border rounded px-3 py-2" placeholder="Type message and press Enter" aria-label="Message input" />
+          <button id="sendBtn" onclick="sendMessage()" class="bg-indigo-600 text-white px-4 py-2 rounded">Send</button>
+          <button onclick="clearChat()" class="border px-3 py-2 rounded">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Proposals -->
+    <section id="proposals" class="hidden">
+      <h2 class="text-2xl font-bold mb-2">AI Proposal Generator</h2>
+      <p class="text-sm text-gray-500 mb-4">Pick a template and generate a professional proposal draft</p>
+
+      <div class="card">
+        <div class="grid md:grid-cols-3 gap-3 mb-3">
+          <select id="proposalTemplate" class="border rounded px-3 py-2" onchange="updateTemplatePreview()">
+            <option value="standard">Standard Proposal</option>
+            <option value="fixed">Fixed Price Proposal</option>
+            <option value="retainer">Retainer Proposal</option>
+          </select>
+
+          <input id="projectTitle" class="border rounded px-3 py-2" placeholder="Project title" />
+          <input id="projectBudget" class="border rounded px-3 py-2" placeholder="Budget (optional)" />
+        </div>
+
+        <textarea id="proposalInput" class="w-full border p-3 rounded mb-3" placeholder="Describe project, goals, deliverables"></textarea>
+
+        <div class="flex gap-2">
+          <button onclick="generateProposal()" class="bg-indigo-600 text-white px-4 py-2 rounded">Generate</button>
+          <button onclick="copyProposal()" class="border px-4 py-2 rounded">Copy</button>
+          <button onclick="clearProposal()" class="border px-4 py-2 rounded">Clear</button>
+        </div>
+
+        <pre id="proposalOutput" class="bg-gray-50 p-4 mt-4 rounded text-sm whitespace-pre-wrap"></pre>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="hidden">
+      <h2 class="text-2xl font-bold mb-2">Settings</h2>
+      <p class="text-sm text-gray-500 mb-4">Profile and preferences</p>
+
+      <div class="card max-w-xl">
+        <label class="block text-sm text-gray-600 mb-1">Display name</label>
+        <input id="displayName" class="border rounded px-3 py-2 mb-3 w-full" placeholder="Your name" />
+
+        <label class="block text-sm text-gray-600 mb-1">Currency</label>
+        <select id="currency" class="border rounded px-3 py-2 mb-3">
+          <option value="$">$ USD</option>
+          <option value="₹">₹ INR</option>
+          <option value="€">€ EUR</option>
+        </select>
+
+        <div class="flex gap-2">
+          <button onclick="saveSettings()" class="bg-indigo-600 text-white px-4 py-2 rounded">Save</button>
+          <button onclick="loadSettings()" class="border px-4 py-2 rounded">Load</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Invoice Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+    <div class="bg-white p-6 rounded w-full max-w-md card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modalTitle" class="font-bold text-lg">Create Invoice</h3>
+        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <label class="block text-sm text-gray-600">Client name</label>
+      <input id="clientName" class="border rounded px-3 py-2 w-full mb-3" placeholder="Client name" />
+
+      <label class="block text-sm text-gray-600">Amount</label>
+      <input id="amount" type="number" min="0" step="0.01" class="border rounded px-3 py-2 w-full mb-3" placeholder="0.00" />
+
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal()" class="px-3 py-1 border rounded">Cancel</button>
+        <button onclick="saveInvoice()" class="bg-indigo-600 text-white px-3 py-1 rounded">Save</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
+/* State and storage */
+const STORAGE_KEYS = { invoices: 'fh_invoices_v1', chat: 'fh_chat_v1', settings: 'fh_settings_v1' };
+let invoices = JSON.parse(localStorage.getItem(STORAGE_KEYS.invoices) || '[]');
+let chat = JSON.parse(localStorage.getItem(STORAGE_KEYS.chat) || '[]');
+let settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{}');
+
+/* Utility */
+function formatCurrency(n){ const cur = (settings.currency||'$'); return cur + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function nowISO(){ return new Date().toISOString(); }
+function shortDate(iso){ const d=new Date(iso); return d.toLocaleDateString(); }
+
 /* Navigation */
-function showPage(page) {
-  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
-  document.getElementById(page).classList.remove("hidden");
-
-  document.querySelectorAll(".sidebar-item").forEach(b => b.classList.remove("active"));
-  event.target.classList.add("active");
+function showPage(page){
+  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+  const el = document.getElementById(page);
+  if(el) el.classList.remove('hidden');
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));
+  // find sidebar button by text
+  Array.from(document.querySelectorAll('.sidebar-item')).find(b=>b.textContent.trim().startsWith(page.charAt(0).toUpperCase()+page.slice(1)))?.classList.add('active');
+  document.getElementById('pageTitle').textContent = page.charAt(0).toUpperCase()+page.slice(1);
+  // update counts
+  updateCounts();
 }
 
-/* Invoice Logic */
-let invoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+/* Modal */
+function openModal(){ document.getElementById('modal').classList.remove('hidden'); document.getElementById('clientName').focus(); }
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
 
-function renderInvoices() {
-  const table = document.getElementById("invoiceTable");
-  table.innerHTML = invoices.map(i => `
-    <tr class="border-t">
-      <td class="p-2">${i.client}</td>
-      <td>$${i.amount}</td>
-      <td>${i.status}</td>
-    </tr>
-  `).join("");
-}
+/* Invoice logic */
+function saveInvoice(){
+  const client = document.getElementById('clientName').value.trim();
+  const amount = parseFloat(document.getElementById('amount').value);
+  if(!client){ alert('Please enter client name'); return; }
+  if(isNaN(amount) || amount <= 0){ alert('Please enter a valid amount'); return; }
 
-function openModal() {
-  document.getElementById("modal").classList.remove("hidden");
-}
-
-function closeModal() {
-  document.getElementById("modal").classList.add("hidden");
-}
-
-function saveInvoice() {
-  const client = document.getElementById("clientName").value;
-  const amount = document.getElementById("amount").value;
-
-  invoices.push({ client, amount, status: "Sent" });
-  localStorage.setItem("invoices", JSON.stringify(invoices));
+  invoices.unshift({ id: Date.now().toString(), client, amount: Number(amount), status: 'Sent', date: nowISO() });
+  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices));
   renderInvoices();
   closeModal();
+  document.getElementById('clientName').value=''; document.getElementById('amount').value='';
+}
+
+function renderInvoices(){
+  const table = document.getElementById('invoiceTable');
+  const search = (document.getElementById('invoiceSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('statusFilter')?.value || 'all';
+
+  const filtered = invoices.filter(inv=>{
+    if(filter !== 'all' && inv.status !== filter) return false;
+    if(!search) return true;
+    return inv.client.toLowerCase().includes(search) || String(inv.amount).includes(search);
+  });
+
+  table.innerHTML = filtered.map(inv => `
+    <tr class="border-t">
+      <td class="p-2">${escapeHtml(inv.client)}</td>
+      <td class="p-2">${formatCurrency(inv.amount)}</td>
+      <td class="p-2">${inv.status}</td>
+      <td class="p-2">${shortDate(inv.date)}</td>
+      <td class="p-2">
+        ${inv.status !== 'Paid' ? `<button onclick="markPaid('${inv.id}')" class="text-xs bg-green-600 text-white px-2 py-1 rounded mr-2">Mark Paid</button>` : ''}
+        ${inv.status !== 'Cancelled' ? `<button onclick="cancelInvoice('${inv.id}')" class="text-xs border px-2 py-1 rounded mr-2">Cancel</button>` : ''}
+        <button onclick="deleteInvoice('${inv.id}')" class="text-xs border px-2 py-1 rounded text-red-600">Delete</button>
+      </td>
+    </tr>
+  `).join('') || `<tr><td class="p-4 text-gray-500" colspan="5">No invoices found</td></tr>`;
+
+  document.getElementById('shownCount').textContent = filtered.length;
+  updateTotals();
+  renderRecentInvoices();
+  updateCounts();
+}
+
+function markPaid(id){
+  const inv = invoices.find(i=>i.id===id);
+  if(inv){ inv.status='Paid'; localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices)); renderInvoices(); }
+}
+function cancelInvoice(id){
+  const inv = invoices.find(i=>i.id===id);
+  if(inv){ inv.status='Cancelled'; localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices)); renderInvoices(); }
+}
+function deleteInvoice(id){
+  if(!confirm('Delete this invoice?')) return;
+  invoices = invoices.filter(i=>i.id!==id);
+  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices));
+  renderInvoices();
+}
+
+function updateTotals(){
+  const outstanding = invoices.filter(i=>i.status!=='Paid' && i.status!=='Cancelled').reduce((s,i)=>s+i.amount,0);
+  document.getElementById('totalOutstanding').textContent = formatCurrency(outstanding);
+  document.getElementById('outstanding').textContent = formatCurrency(outstanding);
+  document.getElementById('invoiceCount').textContent = invoices.length;
+}
+
+function renderRecentInvoices(){
+  const el = document.getElementById('recentInvoices');
+  const recent = invoices.slice(0,5);
+  el.innerHTML = recent.length ? recent.map(i=>`<div class="flex items-center justify-between"><div><div class="font-medium">${escapeHtml(i.client)}</div><div class="text-xs text-gray-500">${shortDate(i.date)} • ${i.status}</div></div><div class="text-sm font-semibold">${formatCurrency(i.amount)}</div></div>`).join('') : '<div class="text-sm text-gray-500">No recent invoices</div>';
 }
 
 /* Chat */
-let chat = JSON.parse(localStorage.getItem("chat") || "[]");
-
-function renderChat() {
-  const box = document.getElementById("chatBox");
-  box.innerHTML = chat.map(m =>
-    `<div class="chat-bubble ${m.role}">${m.text}</div>`
-  ).join("");
+function renderChat(){
+  const box = document.getElementById('chatBox');
+  box.innerHTML = chat.map(m=>`
+    <div class="chat-bubble ${m.role==='client'?'client':'freelancer'}" title="${new Date(m.time).toLocaleString()}">
+      <div class="text-sm">${escapeHtml(m.text)}</div>
+      <div class="text-xs text-gray-400 mt-1">${new Date(m.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+    </div>
+  `).join('');
+  box.scrollTop = box.scrollHeight;
+  document.getElementById('messageCount').textContent = chat.length;
 }
 
-function sendMessage() {
-  const input = document.getElementById("chatInput");
-  if (!input.value) return;
+function sendMessage(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const msg = { role: 'freelancer', text, time: nowISO() };
+  chat.push(msg);
+  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
+  input.value='';
+  renderChat();
+  // simulated client reply with typing indicator
+  showTypingIndicator();
+  setTimeout(()=> {
+    chat.push({ role: 'client', text: 'Thanks, I received your message.', time: nowISO() });
+    localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
+    renderChat();
+  }, 900 + Math.random()*900);
+}
 
-  chat.push({ role: "freelancer", text: input.value });
-  chat.push({ role: "client", text: "Got it, thanks!" });
+function showTypingIndicator(){
+  const box = document.getElementById('chatBox');
+  const el = document.createElement('div');
+  el.className = 'chat-bubble client';
+  el.id = 'typing';
+  el.innerHTML = '<div class="text-sm text-gray-600">Typing<span class="animate-pulse">...</span></div>';
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+  setTimeout(()=>{ const t = document.getElementById('typing'); if(t) t.remove(); }, 1200);
+}
 
-  localStorage.setItem("chat", JSON.stringify(chat));
-  input.value = "";
+function clearChat(){
+  if(!confirm('Clear chat history?')) return;
+  chat = [];
+  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
   renderChat();
 }
 
-/* AI Proposal */
-function generateProposal() {
-  const text = document.getElementById("proposalInput").value;
-  document.getElementById("proposalOutput").textContent =
-`Proposal Draft:
+/* Proposal generator */
+function generateProposal(){
+  const title = document.getElementById('projectTitle').value.trim();
+  const budget = document.getElementById('projectBudget').value.trim();
+  const desc = document.getElementById('proposalInput').value.trim();
+  const template = document.getElementById('proposalTemplate').value;
 
-Based on your project:
-"${text}"
+  if(!desc){ alert('Please describe the project'); return; }
 
-I will deliver high-quality work with clear milestones, timely updates, and post-delivery support.
+  let body = '';
+  if(template === 'standard'){
+    body = `Proposal for ${title || 'Project'}\n\nOverview\n${desc}\n\nDeliverables\n- Clear milestones and deliverables\n\nTimeline\n- Estimated 7–10 days\n\nBudget\n- ${budget ? formatCurrency(budget) : 'To be discussed'}\n\nSupport\n- Post-delivery support for 14 days\n\nThank you for the opportunity.`;
+  } else if(template === 'fixed'){
+    body = `Fixed Price Proposal for ${title || 'Project'}\n\nScope\n${desc}\n\nPrice\n- ${budget ? formatCurrency(budget) : 'Please provide budget'}\n\nMilestones\n- Milestone 1: Requirements\n- Milestone 2: Delivery\n\nTerms\n- 50% upfront, 50% on delivery\n\nLooking forward to working together.`;
+  } else {
+    body = `Retainer Proposal for ${title || 'Project'}\n\nObjective\n${desc}\n\nRetainer\n- Monthly retainer: ${budget ? formatCurrency(budget) : 'TBD'}\n\nIncludes\n- Weekly updates, priority support, monthly reports\n\nLet's discuss details and start.`;
+  }
 
-Estimated timeline: 7–10 days.
-Looking forward to working together.`;
+  document.getElementById('proposalOutput').textContent = body;
 }
 
+function copyProposal(){
+  const text = document.getElementById('proposalOutput').textContent;
+  if(!text) return alert('Nothing to copy');
+  navigator.clipboard.writeText(text).then(()=> alert('Proposal copied to clipboard'));
+}
+function clearProposal(){ document.getElementById('proposalInput').value=''; document.getElementById('proposalOutput').textContent=''; }
+
+/* Settings */
+function saveSettings(){
+  settings.currency = document.getElementById('currency').value;
+  settings.displayName = document.getElementById('displayName').value;
+  localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+  alert('Settings saved');
+  renderInvoices();
+}
+function loadSettings(){
+  settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{}');
+  document.getElementById('currency').value = settings.currency || '$';
+  document.getElementById('displayName').value = settings.displayName || '';
+  renderInvoices();
+}
+
+/* Helpers */
+function updateCounts(){
+  document.getElementById('messageCount').textContent = chat.length;
+  document.getElementById('invoiceCount').textContent = invoices.length;
+}
+function updateTotals(){ /* already implemented above */ updateTotals = updateTotals; } // noop to satisfy linter
+
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[s]); }
+
+/* Demo helpers */
+function resetDemo(){
+  if(!confirm('Reset demo data?')) return;
+  invoices = [
+    { id:'1', client:'Acme Co', amount:1200, status:'Sent', date: new Date().toISOString() },
+    { id:'2', client:'Beta LLC', amount:450, status:'Paid', date: new Date(Date.now()-86400000).toISOString() },
+    { id:'3', client:'Gamma Inc', amount:800, status:'Sent', date: new Date(Date.now()-2*86400000).toISOString() }
+  ];
+  chat = [
+    { role:'client', text:'Hi, can you share the timeline?', time: new Date(Date.now()-3600000).toISOString() },
+    { role:'freelancer', text:'Yes, I can deliver in 7–10 days.', time: new Date(Date.now()-3500000).toISOString() }
+  ];
+  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices));
+  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
+  renderInvoices(); renderChat();
+}
+
+/* Keyboard and accessibility */
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') closeModal();
+  if(e.key === 'Enter' && document.activeElement === document.getElementById('chatInput')) { e.preventDefault(); sendMessage(); }
+});
+
 /* Init */
+loadSettings();
 renderInvoices();
 renderChat();
+showPage('dashboard');
 </script>
 </body>
 </html>
