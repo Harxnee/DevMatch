@@ -1,505 +1,646 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FreelancerHub</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <style>
-    :root{
-      --brand:#4f46e5;
-      --muted:#6b7280;
-      --bg:#f8fafc;
-    }
-    html,body{height:100%}
-    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#0f172a}
-    .sidebar-item.active{background:var(--brand); color:white}
-    .chat-bubble{max-width:70%; padding:10px;border-radius:12px;margin:6px;line-height:1.3}
-    .client{background:#eef2ff}
-    .freelancer{background:var(--brand); color:white;margin-left:auto}
-    .fade{transition:all .18s ease}
-    .card{background:white;border-radius:.5rem;box-shadow:0 1px 2px rgba(15,23,42,.04);padding:1rem}
-    /* small responsive tweaks */
-    @media (max-width:900px){
-      aside{width:64px}
-      aside h1{display:none}
-      main{padding:1rem}
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreelancersHub - Complete Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .gradient-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: transform 0.3s, box-shadow 0.3s; }
+        .gradient-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3); }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .slide-left { animation: slideLeft 0.4s ease-out; }
+        @keyframes slideLeft { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .badge-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-paid { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-draft { background: #f3f4f6; color: #374151; }
+        
+        .invoice-card { border-left: 4px solid #667eea; cursor: pointer; }
+        .invoice-card:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.1); transform: translateY(-2px); transition: all 0.3s; }
+        
+        .chat-bubble-sent { background: #667eea; color: white; border-radius: 12px 0 12px 12px; max-width: 70%; word-wrap: break-word; }
+        .chat-bubble-received { background: #e2e8f0; color: #1e293b; border-radius: 0 12px 12px 12px; max-width: 70%; word-wrap: break-word; }
+        
+        .project-progress { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+        .project-progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; }
+        
+        .stat-card { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: all 0.3s; }
+        .stat-card:hover { border-color: #667eea; }
+        
+        .input-field { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 14px; transition: all 0.3s; }
+        .input-field:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3); }
+        .btn-primary:active { transform: translateY(0); }
+        
+        .btn-secondary { background: white; color: #667eea; border: 2px solid #667eea; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-secondary:hover { background: #f8fafc; }
+        
+        .btn-danger { background: #fee2e2; color: #991b1b; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-danger:hover { background: #fecaca; }
+        
+        .nav-item { padding: 10px 16px; cursor: pointer; border-radius: 8px; transition: all 0.3s; color: #64748b; font-weight: 500; border: none; background: none; }
+        .nav-item.active { background: #667eea; color: white; }
+        .nav-item:hover:not(.active) { color: #667eea; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        
+        .hidden { display: none !important; }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .line-chart { max-height: 300px; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+        
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 600; z-index: 2000; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: #3b82f6; }
+    </style>
 </head>
-<body class="min-h-screen flex">
-
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white border-r p-4 shrink-0">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-lg font-bold">FH</div>
-      <div>
-        <h1 class="text-lg font-semibold text-indigo-600">FreelancerHub</h1>
-        <p class="text-sm text-gray-500">Workspace</p>
-      </div>
-    </div>
-
-    <nav class="space-y-2" aria-label="Main navigation">
-      <button onclick="showPage('dashboard')" class="sidebar-item active w-full text-left p-2 rounded flex items-center gap-3 fade" aria-current="page"><i class="fa-solid fa-chart-line w-4"></i> Dashboard</button>
-      <button onclick="showPage('invoices')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-regular fa-file-invoice-dollar w-4"></i> Invoices</button>
-      <button onclick="showPage('chat')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-regular fa-comments w-4"></i> Chat</button>
-      <button onclick="showPage('proposals')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-solid fa-robot w-4"></i> Proposals</button>
-      <button onclick="showPage('settings')" class="sidebar-item w-full text-left p-2 rounded flex items-center gap-3 fade"><i class="fa-solid fa-gear w-4"></i> Settings</button>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg gradient-btn flex items-center justify-center text-white font-bold">F</div>
+                <span class="font-bold text-lg gradient-text">FreelancersHub</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="nav-item active" data-page="dashboard">Dashboard</button>
+                <button class="nav-item" data-page="invoices">Invoices</button>
+                <button class="nav-item" data-page="projects">Projects</button>
+                <button class="nav-item" data-page="chat">Messages</button>
+                <button class="nav-item" data-page="settings">Settings</button>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">JD</div>
+        </div>
     </nav>
 
-    <div class="mt-6 text-sm text-gray-500">
-      <div class="flex items-center justify-between">
-        <span>Plan</span>
-        <span class="font-semibold text-indigo-600">Free</span>
-      </div>
-      <div class="mt-3">
-        <button onclick="resetDemo()" class="w-full text-xs border rounded px-2 py-1">Reset demo data</button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <main class="flex-1 p-6">
-    <!-- Topbar -->
-    <header class="flex items-center justify-between mb-6">
-      <div>
-        <h2 id="pageTitle" class="text-2xl font-bold">Dashboard</h2>
-        <p class="text-sm text-gray-500">Overview of your activity</p>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div class="hidden md:flex items-center gap-2 bg-white card">
-          <i class="fa-regular fa-bell text-gray-400"></i>
-          <span class="text-sm text-gray-600">No notifications</span>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <div class="text-right mr-2">
-            <div class="text-xs text-gray-500">Signed in as</div>
-            <div class="text-sm font-medium">You</div>
-          </div>
-          <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center">Y</div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Dashboard -->
-    <section id="dashboard" class="">
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm text-gray-500">Outstanding</div>
-              <div id="outstanding" class="text-2xl font-semibold">$0.00</div>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- DASHBOARD PAGE -->
+        <div id="page-dashboard" class="page active fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="stat-card">
+                    <div class="text-sm font-medium text-slate-600 mb-2">Total Earned</div>
+                    <div class="text-3xl font-bold gradient-text">$12,450</div>
+                    <div class="text-xs text-slate-500 mt-2">↑ 12% from last month</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="text-sm font-medium text-slate-600 mb-2">Active Projects</div>
+                    <div class="text-3xl font-bold gradient-text">5</div>
+                    <div class="text-xs text-slate-500 mt-2">2 in progress, 3 planned</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="text-sm font-medium text-slate-600 mb-2">Pending Invoices</div>
+                    <div class="text-3xl font-bold gradient-text">3</div>
+                    <div class="text-xs text-slate-500 mt-2">$4,200 awaiting payment</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="text-sm font-medium text-slate-600 mb-2">Messages</div>
+                    <div class="text-3xl font-bold gradient-text">7</div>
+                    <div class="text-xs text-slate-500 mt-2">3 unread from clients</div>
+                </div>
             </div>
-            <i class="fa-solid fa-wallet text-2xl text-indigo-600"></i>
-          </div>
-        </div>
 
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm text-gray-500">Invoices</div>
-              <div id="invoiceCount" class="text-2xl font-semibold">0</div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                    <h3 class="font-bold text-lg mb-4">Revenue Overview</h3>
+                    <canvas id="revenueChart" class="line-chart"></canvas>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                    <h3 class="font-bold text-lg mb-4">Recent Activity</h3>
+                    <div class="space-y-3">
+                        <div class="pb-3 border-b border-slate-100">
+                            <div class="text-sm font-medium text-slate-900">Invoice #001 Paid</div>
+                            <div class="text-xs text-slate-500">2 hours ago</div>
+                        </div>
+                        <div class="pb-3 border-b border-slate-100">
+                            <div class="text-sm font-medium text-slate-900">Message from Sarah</div>
+                            <div class="text-xs text-slate-500">4 hours ago</div>
+                        </div>
+                        <div class="pb-3 border-b border-slate-100">
+                            <div class="text-sm font-medium text-slate-900">Project Milestone 1</div>
+                            <div class="text-xs text-slate-500">1 day ago</div>
+                        </div>
+                        <div class="pb-3">
+                            <div class="text-sm font-medium text-slate-900">New Client Inquiry</div>
+                            <div class="text-xs text-slate-500">2 days ago</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <i class="fa-regular fa-file-invoice text-2xl text-indigo-600"></i>
-          </div>
         </div>
 
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm text-gray-500">Messages</div>
-              <div id="messageCount" class="text-2xl font-semibold">0</div>
+        <!-- INVOICES PAGE -->
+        <div id="page-invoices" class="page">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Invoices</h2>
+                <button class="btn-primary" onclick="openModal('invoiceModal')">+ New Invoice</button>
             </div>
-            <i class="fa-regular fa-comments text-2xl text-indigo-600"></i>
-          </div>
-        </div>
-      </div>
 
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="card">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-semibold">Recent Invoices</h3>
-            <button onclick="showPage('invoices')" class="text-sm text-indigo-600">View all</button>
-          </div>
-          <div id="recentInvoices" class="space-y-2 text-sm text-gray-700"></div>
+            <div class="mb-6 flex gap-2 flex-wrap">
+                <button class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium cursor-pointer hover:bg-slate-200" onclick="filterInvoices('all')">All</button>
+                <button class="px-4 py-2 rounded-lg bg-white text-slate-700 text-sm font-medium cursor-pointer hover:bg-slate-100 border border-slate-200" onclick="filterInvoices('paid')">Paid</button>
+                <button class="px-4 py-2 rounded-lg bg-white text-slate-700 text-sm font-medium cursor-pointer hover:bg-slate-100 border border-slate-200" onclick="filterInvoices('pending')">Pending</button>
+                <button class="px-4 py-2 rounded-lg bg-white text-slate-700 text-sm font-medium cursor-pointer hover:bg-slate-100 border border-slate-200" onclick="filterInvoices('draft')">Draft</button>
+            </div>
+
+            <div id="invoices-container" class="space-y-3"></div>
         </div>
 
-        <div class="card">
-          <h3 class="font-semibold mb-3">Quick Actions</h3>
-          <div class="flex gap-2">
-            <button onclick="showPage('proposals')" class="bg-indigo-600 text-white px-3 py-2 rounded flex items-center gap-2"><i class="fa-solid fa-robot"></i> Generate Proposal</button>
-            <button onclick="openModal()" class="border px-3 py-2 rounded flex items-center gap-2"><i class="fa-regular fa-file-invoice-dollar"></i> New Invoice</button>
-            <button onclick="showPage('chat')" class="border px-3 py-2 rounded flex items-center gap-2"><i class="fa-regular fa-comments"></i> Open Chat</button>
-          </div>
-        </div>
-      </div>
-    </section>
+        <!-- PROJECTS PAGE -->
+        <div id="page-projects" class="page">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Projects</h2>
+                <button class="btn-primary" onclick="openModal('projectModal')">+ New Project</button>
+            </div>
 
-    <!-- Invoices -->
-    <section id="invoices" class="hidden">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <div>
-          <h2 class="text-2xl font-bold">Invoices</h2>
-          <p class="text-sm text-gray-500">Manage and track invoices</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projects-container"></div>
         </div>
 
-        <div class="flex gap-2 items-center">
-          <input id="invoiceSearch" oninput="renderInvoices()" class="border rounded px-3 py-2 text-sm" placeholder="Search client or amount" />
-          <select id="statusFilter" onchange="renderInvoices()" class="border rounded px-3 py-2 text-sm">
-            <option value="all">All statuses</option>
-            <option value="Sent">Sent</option>
-            <option value="Paid">Paid</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          <button onclick="openModal()" class="bg-indigo-600 text-white px-4 py-2 rounded">New Invoice</button>
-        </div>
-      </div>
+        <!-- CHAT PAGE -->
+        <div id="page-chat" class="page">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4" style="height: 600px;">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-bold text-sm">Messages</h3>
+                    </div>
+                    <div class="flex-1 overflow-y-auto" id="clients-list"></div>
+                </div>
 
-      <div class="card overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="text-left text-gray-500">
-            <tr>
-              <th class="p-2">Client</th>
-              <th class="p-2">Amount</th>
-              <th class="p-2">Status</th>
-              <th class="p-2">Date</th>
-              <th class="p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="invoiceTable" class="align-top"></tbody>
-        </table>
-
-        <div class="flex items-center justify-between mt-4">
-          <div class="text-sm text-gray-600">Total outstanding <span id="totalOutstanding" class="font-semibold ml-2">$0.00</span></div>
-          <div class="text-sm text-gray-500">Showing <span id="shownCount">0</span> invoices</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Chat -->
-    <section id="chat" class="hidden">
-      <h2 class="text-2xl font-bold mb-2">Client Chat</h2>
-      <p class="text-sm text-gray-500 mb-4">Real-time style chat for quick client messages</p>
-
-      <div class="card flex flex-col h-80">
-        <div id="chatBox" class="flex-1 overflow-y-auto p-3" aria-live="polite"></div>
-
-        <div class="mt-3 flex gap-2">
-          <input id="chatInput" class="flex-1 border rounded px-3 py-2" placeholder="Type message and press Enter" aria-label="Message input" />
-          <button id="sendBtn" onclick="sendMessage()" class="bg-indigo-600 text-white px-4 py-2 rounded">Send</button>
-          <button onclick="clearChat()" class="border px-3 py-2 rounded">Clear</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Proposals -->
-    <section id="proposals" class="hidden">
-      <h2 class="text-2xl font-bold mb-2">AI Proposal Generator</h2>
-      <p class="text-sm text-gray-500 mb-4">Pick a template and generate a professional proposal draft</p>
-
-      <div class="card">
-        <div class="grid md:grid-cols-3 gap-3 mb-3">
-          <select id="proposalTemplate" class="border rounded px-3 py-2" onchange="updateTemplatePreview()">
-            <option value="standard">Standard Proposal</option>
-            <option value="fixed">Fixed Price Proposal</option>
-            <option value="retainer">Retainer Proposal</option>
-          </select>
-
-          <input id="projectTitle" class="border rounded px-3 py-2" placeholder="Project title" />
-          <input id="projectBudget" class="border rounded px-3 py-2" placeholder="Budget (optional)" />
+                <div class="md:col-span-3 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                    <div id="chat-header" class="p-4 border-b border-slate-200">
+                        <h3 class="font-bold text-sm">Select a conversation</h3>
+                    </div>
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+                    <div id="chat-input-area" class="hidden p-4 border-t border-slate-200 flex gap-2">
+                        <input type="text" id="messageInput" placeholder="Type your message..." class="input-field flex-1">
+                        <button class="btn-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <textarea id="proposalInput" class="w-full border p-3 rounded mb-3" placeholder="Describe project, goals, deliverables"></textarea>
+        <!-- SETTINGS PAGE -->
+        <div id="page-settings" class="page">
+            <div class="max-w-2xl">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Settings</h2>
 
-        <div class="flex gap-2">
-          <button onclick="generateProposal()" class="bg-indigo-600 text-white px-4 py-2 rounded">Generate</button>
-          <button onclick="copyProposal()" class="border px-4 py-2 rounded">Copy</button>
-          <button onclick="clearProposal()" class="border px-4 py-2 rounded">Clear</button>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Profile Information</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                            <input type="text" value="John Doe" class="input-field w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                            <input type="email" value="john@example.com" class="input-field w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Hourly Rate ($)</label>
+                            <input type="number" value="85" class="input-field w-full">
+                        </div>
+                        <button class="btn-primary" onclick="showToast('Profile saved!', 'success')">Save Changes</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Payment Methods</h3>
+                    <div class="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <div class="text-sm font-medium text-slate-900">Stripe Connected ✓</div>
+                        <div class="text-xs text-slate-500">Payments securely handled via Stripe</div>
+                    </div>
+                    <button class="btn-primary" onclick="showToast('Stripe management opened', 'info')">Manage Payments</button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-4">Notifications</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" checked class="w-4 h-4">
+                            <span class="text-sm text-slate-700">Email notifications for new messages</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" checked class="w-4 h-4">
+                            <span class="text-sm text-slate-700">Invoice payment reminders</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" checked class="w-4 h-4">
+                            <span class="text-sm text-slate-700">Project milestone updates</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <pre id="proposalOutput" class="bg-gray-50 p-4 mt-4 rounded text-sm whitespace-pre-wrap"></pre>
-      </div>
-    </section>
-
-    <!-- Settings -->
-    <section id="settings" class="hidden">
-      <h2 class="text-2xl font-bold mb-2">Settings</h2>
-      <p class="text-sm text-gray-500 mb-4">Profile and preferences</p>
-
-      <div class="card max-w-xl">
-        <label class="block text-sm text-gray-600 mb-1">Display name</label>
-        <input id="displayName" class="border rounded px-3 py-2 mb-3 w-full" placeholder="Your name" />
-
-        <label class="block text-sm text-gray-600 mb-1">Currency</label>
-        <select id="currency" class="border rounded px-3 py-2 mb-3">
-          <option value="$">$ USD</option>
-          <option value="₹">₹ INR</option>
-          <option value="€">€ EUR</option>
-        </select>
-
-        <div class="flex gap-2">
-          <button onclick="saveSettings()" class="bg-indigo-600 text-white px-4 py-2 rounded">Save</button>
-          <button onclick="loadSettings()" class="border px-4 py-2 rounded">Load</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Invoice Modal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-    <div class="bg-white p-6 rounded w-full max-w-md card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="modalTitle" class="font-bold text-lg">Create Invoice</h3>
-        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <label class="block text-sm text-gray-600">Client name</label>
-      <input id="clientName" class="border rounded px-3 py-2 w-full mb-3" placeholder="Client name" />
-
-      <label class="block text-sm text-gray-600">Amount</label>
-      <input id="amount" type="number" min="0" step="0.01" class="border rounded px-3 py-2 w-full mb-3" placeholder="0.00" />
-
-      <div class="flex justify-end gap-2">
-        <button onclick="closeModal()" class="px-3 py-1 border rounded">Cancel</button>
-        <button onclick="saveInvoice()" class="bg-indigo-600 text-white px-3 py-1 rounded">Save</button>
-      </div>
     </div>
-  </div>
 
-<script>
-/* State and storage */
-const STORAGE_KEYS = { invoices: 'fh_invoices_v1', chat: 'fh_chat_v1', settings: 'fh_settings_v1' };
-let invoices = JSON.parse(localStorage.getItem(STORAGE_KEYS.invoices) || '[]');
-let chat = JSON.parse(localStorage.getItem(STORAGE_KEYS.chat) || '[]');
-let settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{}');
-
-/* Utility */
-function formatCurrency(n){ const cur = (settings.currency||'$'); return cur + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function nowISO(){ return new Date().toISOString(); }
-function shortDate(iso){ const d=new Date(iso); return d.toLocaleDateString(); }
-
-/* Navigation */
-function showPage(page){
-  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
-  const el = document.getElementById(page);
-  if(el) el.classList.remove('hidden');
-  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));
-  // find sidebar button by text
-  Array.from(document.querySelectorAll('.sidebar-item')).find(b=>b.textContent.trim().startsWith(page.charAt(0).toUpperCase()+page.slice(1)))?.classList.add('active');
-  document.getElementById('pageTitle').textContent = page.charAt(0).toUpperCase()+page.slice(1);
-  // update counts
-  updateCounts();
-}
-
-/* Modal */
-function openModal(){ document.getElementById('modal').classList.remove('hidden'); document.getElementById('clientName').focus(); }
-function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
-
-/* Invoice logic */
-function saveInvoice(){
-  const client = document.getElementById('clientName').value.trim();
-  const amount = parseFloat(document.getElementById('amount').value);
-  if(!client){ alert('Please enter client name'); return; }
-  if(isNaN(amount) || amount <= 0){ alert('Please enter a valid amount'); return; }
-
-  invoices.unshift({ id: Date.now().toString(), client, amount: Number(amount), status: 'Sent', date: nowISO() });
-  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices));
-  renderInvoices();
-  closeModal();
-  document.getElementById('clientName').value=''; document.getElementById('amount').value='';
-}
-
-function renderInvoices(){
-  const table = document.getElementById('invoiceTable');
-  const search = (document.getElementById('invoiceSearch')?.value || '').toLowerCase();
-  const filter = document.getElementById('statusFilter')?.value || 'all';
-
-  const filtered = invoices.filter(inv=>{
-    if(filter !== 'all' && inv.status !== filter) return false;
-    if(!search) return true;
-    return inv.client.toLowerCase().includes(search) || String(inv.amount).includes(search);
-  });
-
-  table.innerHTML = filtered.map(inv => `
-    <tr class="border-t">
-      <td class="p-2">${escapeHtml(inv.client)}</td>
-      <td class="p-2">${formatCurrency(inv.amount)}</td>
-      <td class="p-2">${inv.status}</td>
-      <td class="p-2">${shortDate(inv.date)}</td>
-      <td class="p-2">
-        ${inv.status !== 'Paid' ? `<button onclick="markPaid('${inv.id}')" class="text-xs bg-green-600 text-white px-2 py-1 rounded mr-2">Mark Paid</button>` : ''}
-        ${inv.status !== 'Cancelled' ? `<button onclick="cancelInvoice('${inv.id}')" class="text-xs border px-2 py-1 rounded mr-2">Cancel</button>` : ''}
-        <button onclick="deleteInvoice('${inv.id}')" class="text-xs border px-2 py-1 rounded text-red-600">Delete</button>
-      </td>
-    </tr>
-  `).join('') || `<tr><td class="p-4 text-gray-500" colspan="5">No invoices found</td></tr>`;
-
-  document.getElementById('shownCount').textContent = filtered.length;
-  updateTotals();
-  renderRecentInvoices();
-  updateCounts();
-}
-
-function markPaid(id){
-  const inv = invoices.find(i=>i.id===id);
-  if(inv){ inv.status='Paid'; localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices)); renderInvoices(); }
-}
-function cancelInvoice(id){
-  const inv = invoices.find(i=>i.id===id);
-  if(inv){ inv.status='Cancelled'; localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices)); renderInvoices(); }
-}
-function deleteInvoice(id){
-  if(!confirm('Delete this invoice?')) return;
-  invoices = invoices.filter(i=>i.id!==id);
-  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices));
-  renderInvoices();
-}
-
-function updateTotals(){
-  const outstanding = invoices.filter(i=>i.status!=='Paid' && i.status!=='Cancelled').reduce((s,i)=>s+i.amount,0);
-  document.getElementById('totalOutstanding').textContent = formatCurrency(outstanding);
-  document.getElementById('outstanding').textContent = formatCurrency(outstanding);
-  document.getElementById('invoiceCount').textContent = invoices.length;
-}
-
-function renderRecentInvoices(){
-  const el = document.getElementById('recentInvoices');
-  const recent = invoices.slice(0,5);
-  el.innerHTML = recent.length ? recent.map(i=>`<div class="flex items-center justify-between"><div><div class="font-medium">${escapeHtml(i.client)}</div><div class="text-xs text-gray-500">${shortDate(i.date)} • ${i.status}</div></div><div class="text-sm font-semibold">${formatCurrency(i.amount)}</div></div>`).join('') : '<div class="text-sm text-gray-500">No recent invoices</div>';
-}
-
-/* Chat */
-function renderChat(){
-  const box = document.getElementById('chatBox');
-  box.innerHTML = chat.map(m=>`
-    <div class="chat-bubble ${m.role==='client'?'client':'freelancer'}" title="${new Date(m.time).toLocaleString()}">
-      <div class="text-sm">${escapeHtml(m.text)}</div>
-      <div class="text-xs text-gray-400 mt-1">${new Date(m.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+    <!-- Invoice Modal -->
+    <div id="invoiceModal" class="modal-overlay" onclick="if(event.target === this) closeModal('invoiceModal')">
+        <div class="modal slide-left">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="font-bold text-xl">Create Invoice</h2>
+                <button onclick="closeModal('invoiceModal')" class="text-2xl text-slate-400 hover:text-slate-600">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Client Name</label>
+                    <input type="text" id="clientName" placeholder="Enter client name" class="input-field w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Invoice Amount ($)</label>
+                    <input type="number" id="invoiceAmount" placeholder="0.00" class="input-field w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                    <textarea id="invoiceDesc" placeholder="Service description" class="input-field w-full h-24"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Due Date</label>
+                    <input type="date" id="dueDate" class="input-field w-full">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button class="btn-secondary flex-1" onclick="closeModal('invoiceModal')">Cancel</button>
+                    <button class="btn-primary flex-1" onclick="createInvoice()">Create Invoice</button>
+                </div>
+            </div>
+        </div>
     </div>
-  `).join('');
-  box.scrollTop = box.scrollHeight;
-  document.getElementById('messageCount').textContent = chat.length;
-}
 
-function sendMessage(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-  const msg = { role: 'freelancer', text, time: nowISO() };
-  chat.push(msg);
-  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
-  input.value='';
-  renderChat();
-  // simulated client reply with typing indicator
-  showTypingIndicator();
-  setTimeout(()=> {
-    chat.push({ role: 'client', text: 'Thanks, I received your message.', time: nowISO() });
-    localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
-    renderChat();
-  }, 900 + Math.random()*900);
-}
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal-overlay" onclick="if(event.target === this) closeModal('projectModal')">
+        <div class="modal slide-left">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="font-bold text-xl">Create Project</h2>
+                <button onclick="closeModal('projectModal')" class="text-2xl text-slate-400 hover:text-slate-600">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Project Name</label>
+                    <input type="text" id="projectName" placeholder="Enter project name" class="input-field w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Client</label>
+                    <input type="text" id="projectClient" placeholder="Client name" class="input-field w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                    <textarea id="projectDesc" placeholder="Project details" class="input-field w-full h-24"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Budget ($)</label>
+                    <input type="number" id="projectBudget" placeholder="0.00" class="input-field w-full">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button class="btn-secondary flex-1" onclick="closeModal('projectModal')">Cancel</button>
+                    <button class="btn-primary flex-1" onclick="createProject()">Create Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function showTypingIndicator(){
-  const box = document.getElementById('chatBox');
-  const el = document.createElement('div');
-  el.className = 'chat-bubble client';
-  el.id = 'typing';
-  el.innerHTML = '<div class="text-sm text-gray-600">Typing<span class="animate-pulse">...</span></div>';
-  box.appendChild(el);
-  box.scrollTop = box.scrollHeight;
-  setTimeout(()=>{ const t = document.getElementById('typing'); if(t) t.remove(); }, 1200);
-}
+    <script>
+        const state = {
+            invoices: [
+                { id: '#001', client: 'Sarah Johnson', amount: 2500, status: 'paid', date: 'Jan 15, 2025', dueDate: 'Feb 15, 2025', description: 'Website Design & Development' },
+                { id: '#002', client: 'Tech Startup Inc', amount: 3200, status: 'pending', date: 'Jan 20, 2025', dueDate: 'Feb 20, 2025', description: 'Mobile App Development' },
+                { id: '#003', client: 'Design Studio', amount: 1500, status: 'pending', date: 'Jan 25, 2025', dueDate: 'Feb 25, 2025', description: 'UI/UX Consultation' },
+                { id: '#004', client: 'Marketing Agency', amount: 4200, status: 'draft', date: 'Jan 28, 2025', dueDate: 'Mar 01, 2025', description: 'Content Strategy & SEO Optimization' }
+            ],
+            projects: [
+                { id: 1, name: 'E-Commerce Platform', client: 'Sarah Johnson', progress: 75, status: 'in-progress', budget: 5000, spent: 3750, description: 'Full-stack e-commerce solution with payment integration' },
+                { id: 2, name: 'Mobile Banking App', client: 'Tech Startup Inc', progress: 45, status: 'in-progress', budget: 8000, spent: 3600, description: 'Native mobile app for banking services' },
+                { id: 3, name: 'Blog Redesign', client: 'Design Studio', progress: 100, status: 'completed', budget: 1200, spent: 1200, description: 'Complete redesign and modernization of blog platform' },
+                { id: 4, name: 'Dashboard Analytics', client: 'Marketing Agency', progress: 30, status: 'planned', budget: 3500, spent: 1050, description: 'Real-time analytics dashboard for marketing metrics' }
+            ],
+            conversations: [
+                { id: 1, name: 'Sarah Johnson', lastMessage: 'Great progress on the design!', timestamp: '2 min ago', messages: [
+                    { type: 'received', text: 'Hi John, how\'s the project coming along?' },
+                    { type: 'sent', text: 'Hi Sarah! Making great progress. Should have the first draft by Friday.' },
+                    { type: 'received', text: 'Great progress on the design!' }
+                ]},
+                { id: 2, name: 'Tech Startup Inc', lastMessage: 'Looking forward to the demo', timestamp: '30 min ago', messages: [
+                    { type: 'received', text: 'When can we schedule the demo?' },
+                    { type: 'sent', text: 'How about Thursday at 3 PM?' },
+                    { type: 'received', text: 'Looking forward to the demo' }
+                ]},
+                { id: 3, name: 'Design Studio', lastMessage: 'You: sounds good!', timestamp: '2 hours ago', messages: [
+                    { type: 'received', text: 'Need to discuss the revisions' },
+                    { type: 'sent', text: 'sounds good!' }
+                ]}
+            ],
+            currentConversation: null,
+            invoiceFilter: 'all'
+        };
 
-function clearChat(){
-  if(!confirm('Clear chat history?')) return;
-  chat = [];
-  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
-  renderChat();
-}
+        document.addEventListener('DOMContentLoaded', function() {
+            renderInvoices();
+            renderProjects();
+            renderClients();
+            initChart();
+            setupNavigation();
+        });
 
-/* Proposal generator */
-function generateProposal(){
-  const title = document.getElementById('projectTitle').value.trim();
-  const budget = document.getElementById('projectBudget').value.trim();
-  const desc = document.getElementById('proposalInput').value.trim();
-  const template = document.getElementById('proposalTemplate').value;
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    switchPage(page);
+                });
+            });
+        }
 
-  if(!desc){ alert('Please describe the project'); return; }
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageName).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+        }
 
-  let body = '';
-  if(template === 'standard'){
-    body = `Proposal for ${title || 'Project'}\n\nOverview\n${desc}\n\nDeliverables\n- Clear milestones and deliverables\n\nTimeline\n- Estimated 7–10 days\n\nBudget\n- ${budget ? formatCurrency(budget) : 'To be discussed'}\n\nSupport\n- Post-delivery support for 14 days\n\nThank you for the opportunity.`;
-  } else if(template === 'fixed'){
-    body = `Fixed Price Proposal for ${title || 'Project'}\n\nScope\n${desc}\n\nPrice\n- ${budget ? formatCurrency(budget) : 'Please provide budget'}\n\nMilestones\n- Milestone 1: Requirements\n- Milestone 2: Delivery\n\nTerms\n- 50% upfront, 50% on delivery\n\nLooking forward to working together.`;
-  } else {
-    body = `Retainer Proposal for ${title || 'Project'}\n\nObjective\n${desc}\n\nRetainer\n- Monthly retainer: ${budget ? formatCurrency(budget) : 'TBD'}\n\nIncludes\n- Weekly updates, priority support, monthly reports\n\nLet's discuss details and start.`;
-  }
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
 
-  document.getElementById('proposalOutput').textContent = body;
-}
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
 
-function copyProposal(){
-  const text = document.getElementById('proposalOutput').textContent;
-  if(!text) return alert('Nothing to copy');
-  navigator.clipboard.writeText(text).then(()=> alert('Proposal copied to clipboard'));
-}
-function clearProposal(){ document.getElementById('proposalInput').value=''; document.getElementById('proposalOutput').textContent=''; }
+        function renderInvoices() {
+            const container = document.getElementById('invoices-container');
+            const filtered = state.invoices.filter(inv => 
+                state.invoiceFilter === 'all' || inv.status === state.invoiceFilter
+            );
 
-/* Settings */
-function saveSettings(){
-  settings.currency = document.getElementById('currency').value;
-  settings.displayName = document.getElementById('displayName').value;
-  localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
-  alert('Settings saved');
-  renderInvoices();
-}
-function loadSettings(){
-  settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{}');
-  document.getElementById('currency').value = settings.currency || '$';
-  document.getElementById('displayName').value = settings.displayName || '';
-  renderInvoices();
-}
+            container.innerHTML = filtered.map(invoice => `
+                <div class="bg-white rounded-xl shadow-sm border-l-4 border-slate-200 p-5 invoice-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <div class="font-bold text-lg text-slate-900">${invoice.id}</div>
+                            <div class="text-sm text-slate-500">${invoice.client}</div>
+                        </div>
+                        <span class="badge-status badge-${invoice.status}">${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}</span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-xs text-slate-500">${invoice.description}</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold gradient-text">$${invoice.amount}</div>
+                            <div class="text-xs text-slate-500">Due: ${invoice.dueDate}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary text-sm" onclick="downloadInvoice('${invoice.id}')">Download</button>
+                            <button class="btn-primary text-sm" onclick="sendInvoice('${invoice.id}')">Send</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
 
-/* Helpers */
-function updateCounts(){
-  document.getElementById('messageCount').textContent = chat.length;
-  document.getElementById('invoiceCount').textContent = invoices.length;
-}
-function updateTotals(){ /* already implemented above */ updateTotals = updateTotals; } // noop to satisfy linter
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state">No invoices found</div>';
+            }
+        }
 
-function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[s]); }
+        function filterInvoices(filter) {
+            state.invoiceFilter = filter;
+            renderInvoices();
+        }
 
-/* Demo helpers */
-function resetDemo(){
-  if(!confirm('Reset demo data?')) return;
-  invoices = [
-    { id:'1', client:'Acme Co', amount:1200, status:'Sent', date: new Date().toISOString() },
-    { id:'2', client:'Beta LLC', amount:450, status:'Paid', date: new Date(Date.now()-86400000).toISOString() },
-    { id:'3', client:'Gamma Inc', amount:800, status:'Sent', date: new Date(Date.now()-2*86400000).toISOString() }
-  ];
-  chat = [
-    { role:'client', text:'Hi, can you share the timeline?', time: new Date(Date.now()-3600000).toISOString() },
-    { role:'freelancer', text:'Yes, I can deliver in 7–10 days.', time: new Date(Date.now()-3500000).toISOString() }
-  ];
-  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices));
-  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(chat));
-  renderInvoices(); renderChat();
-}
+        function createInvoice() {
+            const invoice = {
+                id: '#' + String(state.invoices.length + 1).padStart(3, '0'),
+                client: document.getElementById('clientName').value,
+                amount: parseFloat(document.getElementById('invoiceAmount').value),
+                status: 'draft',
+                date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+                dueDate: document.getElementById('dueDate').value,
+                description: document.getElementById('invoiceDesc').value
+            };
 
-/* Keyboard and accessibility */
-document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape') closeModal();
-  if(e.key === 'Enter' && document.activeElement === document.getElementById('chatInput')) { e.preventDefault(); sendMessage(); }
-});
+            if (invoice.client && invoice.amount && invoice.description) {
+                state.invoices.unshift(invoice);
+                closeModal('invoiceModal');
+                document.getElementById('invoiceAmount').value = '';
+                document.getElementById('clientName').value = '';
+                document.getElementById('invoiceDesc').value = '';
+                document.getElementById('dueDate').value = '';
+                renderInvoices();
+                showToast('Invoice created!', 'success');
+            } else {
+                showToast('Please fill in all fields', 'error');
+            }
+        }
 
-/* Init */
-loadSettings();
-renderInvoices();
-renderChat();
-showPage('dashboard');
-</script>
+        function downloadInvoice(invoiceId) {
+            const invoice = state.invoices.find(i => i.id === invoiceId);
+            if (invoice) {
+                const content = `INVOICE ${invoice.id}\n\nClient: ${invoice.client}\nAmount: $${invoice.amount}\nDue: ${invoice.dueDate}\n\n${invoice.description}`;
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+                element.setAttribute('download', `invoice_${invoice.id.replace('#', '')}.txt`);
+                element.click();
+                showToast('Invoice downloaded!', 'success');
+            }
+        }
+
+        function sendInvoice(invoiceId) {
+            const invoice = state.invoices.find(i => i.id === invoiceId);
+            if (invoice && invoice.status === 'draft') {
+                invoice.status = 'pending';
+                renderInvoices();
+                showToast(`Invoice sent to ${invoice.client}`, 'success');
+            }
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projects-container');
+            container.innerHTML = state.projects.map(project => `
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900">${project.name}</h3>
+                            <p class="text-sm text-slate-500">${project.client}</p>
+                        </div>
+                        <span class="badge-status badge-${project.status === 'completed' ? 'paid' : project.status === 'in-progress' ? 'pending' : 'draft'}">${project.status.replace('-', ' ').toUpperCase()}</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">${project.description}</p>
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-slate-700">Progress</span>
+                            <span class="text-xs font-bold text-slate-900">${project.progress}%</span>
+                        </div>
+                        <div class="project-progress">
+                            <div class="project-progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <div>
+                            <span class="text-slate-500">Budget: </span>
+                            <span class="font-bold text-slate-900">$${project.budget}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500">Spent: </span>
+                            <span class="font-bold gradient-text">$${project.spent}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createProject() {
+            const project = {
+                id: state.projects.length + 1,
+                name: document.getElementById('projectName').value,
+                client: document.getElementById('projectClient').value,
+                description: document.getElementById('projectDesc').value,
+                budget: parseFloat(document.getElementById('projectBudget').value),
+                spent: 0,
+                progress: 0,
+                status: 'planned'
+            };
+
+            if (project.name && project.client && project.description && project.budget) {
+                state.projects.unshift(project);
+                closeModal('projectModal');
+                document.getElementById('projectName').value = '';
+                document.getElementById('projectClient').value = '';
+                document.getElementById('projectDesc').value = '';
+                document.getElementById('projectBudget').value = '';
+                renderProjects();
+                showToast('Project created!', 'success');
+            } else {
+                showToast('Please fill in all fields', 'error');
+            }
+        }
+
+        function renderClients() {
+            const container = document.getElementById('clients-list');
+            container.innerHTML = state.conversations.map(conv => `
+                <div class="p-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-all ${state.currentConversation?.id === conv.id ? 'bg-slate-50' : ''}" onclick="selectConversation(${conv.id})">
+                    <div class="font-medium text-sm text-slate-900">${conv.name}</div>
+                    <div class="text-xs text-slate-500 truncate">${conv.lastMessage}</div>
+                    <div class="text-xs text-slate-400 mt-1">${conv.timestamp}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectConversation(conversationId) {
+            const conversation = state.conversations.find(c => c.id === conversationId);
+            state.currentConversation = conversation;
+
+            document.getElementById('chat-header').innerHTML = `<h3 class="font-bold text-sm">${conversation.name}</h3>`;
+            renderChatMessages();
+            document.getElementById('chat-input-area').classList.remove('hidden');
+            renderClients();
+            scrollChatToBottom();
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = state.currentConversation.messages.map(msg => `
+                <div class="flex ${msg.type === 'sent' ? 'justify-end' : 'justify-start'}">
+                    <div class="chat-bubble-${msg.type} px-4 py-2">${msg.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (text && state.currentConversation) {
+                state.currentConversation.messages.push({ type: 'sent', text });
+                state.currentConversation.lastMessage = 'You: ' + text;
+                input.value = '';
+                renderChatMessages();
+                renderClients();
+                scrollChatToBottom();
+                showToast('Message sent!', 'success');
+
+                setTimeout(() => {
+                    state.currentConversation.messages.push({ type: 'received', text: 'Thanks for your message! I\'ll get back to you soon.' });
+                    state.currentConversation.lastMessage = 'Thanks for your message! I\'ll get back to you soon.';
+                    renderChatMessages();
+                    renderClients();
+                    scrollChatToBottom();
+                }, 1500);
+            }
+        }
+
+        function scrollChatToBottom() {
+            const chatDiv = document.getElementById('chat-messages');
+            setTimeout(() => {
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            }, 0);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('revenueChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan 1', 'Jan 5', 'Jan 10', 'Jan 15', 'Jan 20', 'Jan 25', 'Jan 30'],
+                        datasets: [{
+                            label: 'Revenue',
+                            data: [1200, 1900, 1500, 2200, 2800, 3200, 3800],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { callback: function(v) { return '$' + v; } } }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
 </body>
 </html>
